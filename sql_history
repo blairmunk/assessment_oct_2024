@@ -1,0 +1,130 @@
+# Создание БД
+
+mysql> CREATE DATABASE Human_Friends;
+Query OK, 1 row affected (0,05 sec)
+ 
+mysql> USE Human_Friends;
+Database changed
+mysql> CREATE TABLE Animals (
+    -> id INT AUTO_INCREMENT PRIMARY KEY,
+    -> name VARCHAR(50),
+    -> birth_date DATE,
+    -> commands TEXT
+    -> );
+Query OK, 0 rows affected (0,13 sec)
+ 
+# Создание Таблиц животных
+
+mysql> CREATE TABLE Dogs ( id INT, breed VARCHAR(30), FOREIGN KEY (id) REFERENCES Animals(id) );
+Query OK, 0 rows affected (0,12 sec)
+ 
+mysql> CREATE TABLE Cats ( id INT, color VARCHAR(20), FOREIGN KEY (id) REFERENCES Animals(id) );
+Query OK, 0 rows affected (0,17 sec)
+ 
+mysql> CREATE TABLE Hamsters ( id INT, cage_size VARCHAR(15), FOREIGN KEY (id) REFERENCES Animals(id) );
+Query OK, 0 rows affected (0,36 sec)
+ 
+mysql> CREATE TABLE Horses ( id INT, breed VARCHAR(30), FOREIGN KEY (id) REFEREN
+CES Animals(id) );
+Query OK, 0 rows affected (0,17 sec)
+ 
+mysql> CREATE TABLE Camels ( id INT, desert_habitat BOOLEAN, FOREIGN KEY (id) REFERENCES Animals(id) );
+Query OK, 0 rows affected (0,19 sec)
+ 
+mysql> CREATE TABLE Donkeys ( id INT, pack_animal BOOLEAN, FOREIGN KEY (id) REFE
+RENCES Animals(id) );
+Query OK, 0 rows affected (0,18 sec)
+ 
+
+# Наполнение таблиц
+
+mysql> INSERT INTO Animals (name, birth_date, commands)
+    -> VALUES ('Buddy', '2018-01-15', 'sit, stay, fetch'),
+    -> ('Whiskers', '2020-02-28', 'purr, scratch'),
+    -> ('Nibbles', '2021-09-01', 'run, hide');
+Query OK, 3 rows affected (0,05 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+ 
+mysql> INSERT INTO Animals (name, birth_date, commands) VALUES ('Lightning', '2015-09-01', 'gallop, trot'), ('Sammy', '2012-03-15', 'carry load, walk'), ('Max', '2019-11-20', 'bray, carry');
+Query OK, 3 rows affected (0,04 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+ 
+mysql> INSERT INTO Dogs (id, breed)
+    -> VALUES
+    -> (1, 'Labrador')
+    -> ;
+Query OK, 1 row affected (0,03 sec)
+ 
+mysql> INSERT INTO Cats (id, color) VALUES (2, 'Gray');
+Query OK, 1 row affected (0,05 sec)
+ 
+mysql> INSERT INTO Cats (id, cage_size) VALUES (3, 'Large');
+ERROR 1054 (42S22): Unknown column 'cage_size' in 'field list'
+mysql> INSERT INTO Hamsters (id, cage_size) VALUES (3, 'Large');
+Query OK, 1 row affected (0,06 sec)
+ 
+mysql> INSERT INTO Horses (id, breed) VALUES (4, 'Thoroughbred'),
+    -> (5, 'Arabian');
+Query OK, 2 rows affected (0,05 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+ 
+mysql> INSERT INTO Donkeys (id, pack_animal) VALUES (6, TRUE);
+Query OK, 1 row affected (0,02 sec)
+ 
+mysql> DELETE FROM Camels;
+Query OK, 0 rows affected (0,01 sec)
+ 
+mysql> ALTER TABLE Horses ADD COLUMN pack_animal BOOLEAN DEFAULT FALSE;
+Query OK, 0 rows affected (0,09 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+ 
+mysql> UPDATE Donkeys SET pack_animal = TRUE;
+Query OK, 0 rows affected (0,01 sec)
+Rows matched: 1  Changed: 0  Warnings: 0
+ 
+mysql> UPDATE Horses SET pack_animal = TRUE WHERE id IN (SELECT id FROM Animals WHERE commands LIKE '%pack%');
+Query OK, 0 rows affected (0,00 sec)
+Rows matched: 0  Changed: 0  Warnings: 0
+ 
+# Создание таблицы молодых животных
+
+mysql> CREATE TABLE YoungAnimals (
+    -> id INT PRIMARY KEY,
+    -> age INT,
+    -> month_of_birth VARCHAR(20),
+    -> FOREIGN KEY (id) REFERENCES Animals(id)
+    -> );
+Query OK, 0 rows affected (0,12 sec)
+ 
+mysql> INSERT INTO YoungAnimals (id, age, month_of_birth)
+    -> SELECT id, MONTH(CURRENT_DATE - birth_date) + 1 AS age,
+    -> 
+    -> CASE
+    -> WHEN MONTH(CURRENT_DATE - birth_date) BETWEEN 1 AND 3 THEN CONCAT(MONTH(CURRENT_DATE - birth_date), ' month')
+    -> ELSE NULL
+    -> END AS month_of_birth
+    -> FROM Animals
+    -> WHERE DATEDIFF(CURRENT_DATE, birth_date) BETWEEN 365 AND 1095;
+Query OK, 0 rows affected (0,00 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# Объединение таблиц в одну
+
+mysql> CREATE TABLE AllAnimals AS
+    -> SELECT 'Animals' as source_table, id, name, birth_date, commands, NULL as breed, NULL as color, NULL as cage_size, NULL as pack_animal, NULL as desert_habitat, NULL as age, NULL as month_of_birth FROM Animals
+    -> UNION ALL
+    -> SELECT 'Dogs' as source_table, id, NULL, NULL, NULL, breed, NULL, NULL, NULL, NULL, NULL, NULL FROM Dogs
+    -> UNION ALL
+    -> SELECT 'Cats' as source_table, id, NULL, NULL, NULL, NULL, color, NULL, NULL, NULL, NULL, NULL FROM Cats
+    -> UNION ALL
+    -> SELECT 'Hamsters' as source_table, id, NULL, NULL, NULL, NULL, NULL, cage_size, NULL, NULL, NULL, NULL FROM Hamsters
+    -> UNION ALL
+    -> SELECT 'Horses' as source_table, id, NULL, NULL, NULL, breed, NULL, NULL, pack_animal, NULL, NULL, NULL FROM Horses
+    -> UNION ALL
+    -> SELECT 'Donkeys' as source_table, id, NULL, NULL, NULL, NULL, NULL, NULL, pack_animal, NULL, NULL, NULL FROM Donkeys
+    -> UNION ALL
+    -> SELECT 'Camels' as source_table, id, NULL, NULL, NULL, NULL, NULL, NULL, NULL, desert_habitat, NULL, NULL FROM Camels
+    -> UNION ALL
+    -> SELECT 'YoungAnimals' as source_table, id, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, age, month_of_birth FROM YoungAnimals;
+Query OK, 12 rows affected (0,17 sec)
+Records: 12  Duplicates: 0  Warnings: 0
