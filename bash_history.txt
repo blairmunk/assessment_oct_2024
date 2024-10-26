@@ -1,0 +1,22 @@
+echo "Собаки" > Pets.txt
+echo "Кошки" >> Pets.txt
+echo "Хомяки" >> Pets.txt
+echo "Лошади" > PackAnimals.txt
+echo "Верблюды" >> PackAnimals.txt
+echo "Ослы" >> PackAnimals.txt
+cat Pets.txt PackAnimals.txt > HumanFriends.txt
+cat HumanFriends.txt
+ls
+mkdir NewDirectory
+mv HumanFriends.txt NewDirectory/
+ls NewDirectory
+wget https://dev.mysql.com/get/mysql-apt-config_0.8.22-1_all.deb
+sudo dpkg -i mysql-apt-config_0.8.22-1_all.deb
+sudo apt update
+sudo apt install mysql-server
+sudo mysql_secure_installation
+sudo systemctl status mysql
+wget http://ports.ubuntu.com/pool/universe/v/vlc/vlc-l10n_3.0.9.2-1_all.deb
+sudo dpkg -i vlc-l10n_3.0.9.2-1_all.deb
+sudo dpkg -r vlc-l10n
+dpkg -l | grep vlc
